@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>網頁自動開啟器</title>
+<style>
+:root {
+  --bg-primary: #0f172a;
+  --bg-card: #1e293b;
+  --bg-input: #334155;
+  --border-color: #475569;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --accent-color: #3b82f6;
+  --accent-hover: #2563eb;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  padding: 40px 20px;
+  max-width: 640px;
+  margin: auto;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.5;
+}
+
+.box {
+  border: 1px solid var(--border-color);
+  padding: 24px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  background-color: var(--bg-card);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.hidden {
+  display: none;
+}
+
+h2, h3 {
+  margin-top: 0;
+  margin-bottom: 12px;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+}
+
+p {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  margin-top: 0;
+  margin-bottom: 18px;
+}
+
+textarea, input {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-input);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+textarea:focus, input:focus {
+  border-color: var(--accent-color);
+}
+
+textarea {
+  height: 160px;
+  resize: vertical;
+}
+
+.button-group {
+  display: flex;
+  gap: 10px;
+}
+
+button {
+  padding: 10px 18px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  cursor: pointer;
+  background-color: transparent;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+button:hover {
+  background-color: var(--bg-input);
+}
+
+button.primary {
+  background-color: var(--accent-color);
+  border-color: var(--accent-color);
+  color: #ffffff;
+}
+
+button.primary:hover {
+  background-color: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+</style>
+</head>
+<body>
+
+<div class="box">
+  <h2>網頁批次開啟器</h2>
+  <p>請點擊下方按鈕同時開啟所有預設網址。</p>
+  <div class="button-group">
+    <button class="primary" onclick="openUrls()">開啟所有網址</button>
+    <button onclick="toggleAdmin()">管理控制台</button>
+  </div>
+</div>
+
+<div id="login-box" class="box hidden">
+  <h3>管理員身份驗證</h3>
+  <input type="text" id="user" placeholder="帳號"><br><br>
+  <input type="password" id="pass" placeholder="密碼"><br><br>
+  <button class="primary" onclick="login()">驗證登入</button>
+</div>
+
+<div id="admin-box" class="box hidden">
+  <h3>網址清單管理</h3>
+  <p>每行輸入單一網址：</p>
+  <textarea id="url-list"></textarea><br><br>
+  <div class="button-group">
+    <button class="primary" onclick="saveUrls()">儲存設定</button>
+    <button onclick="openUrls()">測試開啟</button>
+  </div>
+</div>
+
+<script>
+const ADMIN_USER = "admin";
+const ADMIN_PASS = "123456";
+const DEFAULT_URLS = [
+  "https://www.google.com",
+  "https://www.youtube.com"
+];
+
+function getUrls() {
+  try {
+    const saved = localStorage.getItem("my_urls");
+    return saved ? JSON.parse(saved) : DEFAULT_URLS;
+  } catch {
+    return DEFAULT_URLS;
+  }
+}
+
+function openUrls() {
+  getUrls().forEach(url => {
+    try {
+      window.open(url, "_blank", "noopener,noreferrer");
+    } catch {}
+  });
+}
+
+function toggleAdmin() {
+  document.getElementById("login-box").classList.toggle("hidden");
+}
+
+function login() {
+  const u = document.getElementById("user").value;
+  const p = document.getElementById("pass").value;
+
+  if (u === ADMIN_USER && p === ADMIN_PASS) {
+    document.getElementById("login-box").classList.add("hidden");
+    document.getElementById("admin-box").classList.remove("hidden");
+    document.getElementById("url-list").value = getUrls().join("\n");
+  } else {
+    alert("帳號或密碼錯誤。");
+  }
+}
+
+function saveUrls() {
+  const urls = document.getElementById("url-list").value
+    .split("\n")
+    .map(s => s.trim())
+    .filter(Boolean)
+    .filter(s => /^https?:\/\//i.test(s));
+
+  localStorage.setItem("my_urls", JSON.stringify(urls));
+  document.getElementById("url-list").value = urls.join("\n");
+  alert("設定已儲存。");
+}
+</script>
+</body>
+</html>
